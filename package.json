@@ -1,0 +1,26 @@
+{
+  "name": "ultrasound-receiver",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/murozono-aiki/ultrasound-receiver#readme",
+  "bugs": {
+    "url": "https://github.com/murozono-aiki/ultrasound-receiver/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/murozono-aiki/ultrasound-receiver.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.7",
+    "typescript": "^6.0.3",
+    "webpack": "^5.106.2"
+  }
+}
