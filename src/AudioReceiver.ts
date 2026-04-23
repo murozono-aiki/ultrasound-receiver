@@ -48,6 +48,10 @@ export class AudioReceiver {
         }
     }
 
+    /**
+     * 信号の強度を取得
+     * @returns 信号強度
+     */
     static getStrength():number {
         if (!this.#analyser) new Error("AudioReceiver.initを実行する必要があります");
     

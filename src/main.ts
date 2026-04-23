@@ -8,15 +8,14 @@ const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
 
 startBtn.addEventListener('click', async () => {
     await AudioReceiver.init(targetFreq);
+    (document.getElementById("targetFreq") as HTMLSpanElement).textContent = targetFreq.toString();
     startBtn.style.display = 'none';
     (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
     update();
 });
 
 function update() {
-    // 全体の中での最大音量（ノイズフロア確認用）
-    //const maxInAll = Math.max(...dataArray);
-    
+    // 信号強度を取得
     const strength = AudioReceiver.getStrength();
     
     const indicator = document.getElementById('indicator') as HTMLElement;
@@ -24,8 +23,8 @@ function update() {
     const maxValSpan = document.getElementById('maxVal') as HTMLElement;
     
     // 数値表示の更新
-    valSpan.innerText = strength.toString();
-    //maxValSpan.innerText = maxInAll.toString();
+    valSpan.textContent = strength.toString();
+    //maxValSpan.textContent = maxInAll.toString();
     
     // 強度に応じてインジケーターを大きく、赤くする
     const scale = 1 + (strength / 100); 
