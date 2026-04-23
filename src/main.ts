@@ -1,67 +1,23 @@
+import { AudioReceiver } from "./AudioReceiver.js";
+
 // 監視したい特定の周波数 (Hz)
 const targetFreq = 18000;
-
-let audioContext:AudioContext;
-let analyser:AnalyserNode;
-let dataArray:Uint8Array<ArrayBuffer>;
 
 const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
 
 
 startBtn.addEventListener('click', async () => {
-    try {
-        // マイクの使用許可を得る設定
-        const constraints = {
-            audio: {
-                // 生の音を取りたいため、ブラウザによる加工を無効にする
-                echoCancellation: false,
-                noiseSuppression: false,
-                autoGainControl: false
-            }
-        };
-        
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Audio APIのセットアップ
-        audioContext = new (window.AudioContext || (window as any).webkitAudioContext())();
-        const source = audioContext.createMediaStreamSource(stream);
-        
-        // 音声解析ノードの作成
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 2048; // 細かさの設定 (2のべき乗)
-        analyser.smoothingTimeConstant = 0.8; // 動きを滑らかにする
-        source.connect(analyser);
-
-        // 周波数データの格納先を準備
-        const bufferLength = analyser.frequencyBinCount;
-        dataArray = new Uint8Array(bufferLength);
-        
-        // サンプリングレートに基づいて、18kHzがどのインデックスにあるか計算
-        // index = 周波数 / (サンプリングレート / FFTサイズ)
-        const sampleRate = audioContext.sampleRate;
-        const binIndex = Math.round(targetFreq / (sampleRate / analyser.fftSize));
-
-        // UIの切り替え
-        (document.getElementById('startBtn') as HTMLElement).style.display = 'none';
-        (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
-
-        // 描画ループの開始
-        update(binIndex);
-        
-    } catch (err:any) {
-        alert('マイクへのアクセスが拒否されたか、エラーが発生しました。\n' + err.message);
-    }
+    await AudioReceiver.init(targetFreq);
+    startBtn.style.display = 'none';
+    (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
+    update();
 });
 
-function update(binIndex:number) {
-    // 現在の周波数データを取得
-    analyser.getByteFrequencyData(dataArray);
-    
+function update() {
     // 全体の中での最大音量（ノイズフロア確認用）
-    const maxInAll = Math.max(...dataArray);
+    //const maxInAll = Math.max(...dataArray);
     
-    // ターゲット周波数とその前後の平均値を取る（誤差吸収のため）
-    const strength = Math.round(((dataArray[binIndex - 1] || 0) + (dataArray[binIndex] || 0) + (dataArray[binIndex + 1] || 0)) / 3) || 0;
+    const strength = AudioReceiver.getStrength();
     
     const indicator = document.getElementById('indicator') as HTMLElement;
     const valSpan = document.getElementById('val') as HTMLElement;
@@ -69,7 +25,7 @@ function update(binIndex:number) {
     
     // 数値表示の更新
     valSpan.innerText = strength.toString();
-    maxValSpan.innerText = maxInAll.toString();
+    //maxValSpan.innerText = maxInAll.toString();
     
     // 強度に応じてインジケーターを大きく、赤くする
     const scale = 1 + (strength / 100); 
@@ -87,5 +43,5 @@ function update(binIndex:number) {
     }
 
     // 次のフレームで再描画
-    requestAnimationFrame(() => update(binIndex));
+    requestAnimationFrame(() => update());
 }

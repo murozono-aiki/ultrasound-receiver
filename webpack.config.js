@@ -26,7 +26,12 @@ export default {
 
   resolve: {
     // import文で拡張子を省略可能にする
-    extensions: [".ts", ".js"]
+    extensions: [".ts", ".js"],
+    // .js でのインポートを .ts に読み替えさせる
+    extensionAlias: {
+      '.js': ['.ts', '.js'],
+      '.mjs': ['.mts', '.mjs'] // mjsを使用している場合
+    }
   },
 
   mode: "production"
