@@ -1,14 +1,15 @@
 import { AudioReceiver } from "./AudioReceiver.js";
 
-// 監視したい特定の周波数 (Hz)
+// 監視したい特定の周波数の初期値 (Hz)
 const targetFreq = 18000;
 
 const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
+const targetFreqInput = document.getElementById('targetFreq') as HTMLInputElement;
 
 
 startBtn.addEventListener('click', async () => {
     await AudioReceiver.init(targetFreq);
-    (document.getElementById("targetFreq") as HTMLSpanElement).textContent = targetFreq.toString();
+    targetFreqInput.value = targetFreq.toString();
     startBtn.style.display = 'none';
     (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
     update();
@@ -44,3 +45,7 @@ function update() {
     // 次のフレームで再描画
     requestAnimationFrame(() => update());
 }
+
+targetFreqInput.addEventListener('input', async () => {
+    AudioReceiver.init(parseFloat(targetFreqInput.value));
+});
