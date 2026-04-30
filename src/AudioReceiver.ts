@@ -68,7 +68,7 @@ export class AudioReceiver {
         ) / 3;
     }
 
-    static getStrength(): number {
+    static getStrength(): {strength:number, target1:number, target2:number, ref:number} {
         if (!this.#analyser) throw new Error("AudioReceiver.initを実行する必要があります");
         this.#analyser.getByteFrequencyData(this.#dataArray);
         
@@ -97,14 +97,14 @@ export class AudioReceiver {
         const finalStrength = Math.max(0, Math.round(effectiveStrength));
 
         // 5. 継続時間フィルター
-        if (finalStrength > 40) { // デュアルトーンは厳しい条件なので閾値は少し低め(40程度)でOK
+        /*if (finalStrength > 40) { // デュアルトーンは厳しい条件なので閾値は少し低め(40程度)でOK
             this.#consecutiveHits++;
         } else {
             this.#consecutiveHits = 0;
         }
 
-        if (this.#consecutiveHits < this.#REQUIRED_HITS) return 0;
+        if (this.#consecutiveHits < this.#REQUIRED_HITS) return {strength: 0, target1: Math.round(t1Strength), target2: Math.round(t2Strength), ref: Math.round(refStrength)};*/
 
-        return finalStrength;
+        return {strength: finalStrength, target1: Math.round(t1Strength), target2: Math.round(t2Strength), ref: Math.round(refStrength)};
     }
 }
