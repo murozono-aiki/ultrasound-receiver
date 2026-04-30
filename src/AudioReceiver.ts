@@ -1,20 +1,26 @@
 export class AudioReceiver {
-    static #audioContext:AudioContext;
-    static #analyser:AnalyserNode;
-    static #dataArray:Uint8Array<ArrayBuffer>;
-    static #binIndex:number;
+    static #audioContext: AudioContext;
+    static #analyser: AnalyserNode;
+    static #dataArray: Uint8Array<ArrayBuffer>;
+    
+    static #targetBinIndex: number;
+    static #refBinIndex: number; // 広帯域ノイズ判定用のリファレンスインデックス
+
+    // チューニング用の定数
+    // ターゲットより2000Hz下の帯域をノイズ判定の基準とする
+    static readonly #REF_OFFSET_HZ = -2000; 
+    // ノイズと判定した際の減衰係数（環境に合わせて1.0〜2.0程度で調整）
+    static readonly #NOISE_PENALTY_WEIGHT = 1.2; 
 
     /**
      * マイクの使用許可を得て、聴音の準備をする
-     * @param targetFreq 監視したい周波数（Hz）
+     * @param targetFreq 監視したい周波数（18000Hz ~ 20000Hz）
      */
-    static async init(targetFreq:number):Promise<boolean> {
+    static async init(targetFreq: number): Promise<boolean> {
         try {
             if (!this.#audioContext) {
-                // マイクの使用許可を得る設定
                 const constraints = {
                     audio: {
-                        // 生の音を取りたいため、ブラウザによる加工を無効にする
                         echoCancellation: false,
                         noiseSuppression: false,
                         autoGainControl: false
@@ -23,50 +29,59 @@ export class AudioReceiver {
                 
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
-                // Audio APIのセットアップ
                 this.#audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
                 const source = this.#audioContext.createMediaStreamSource(stream);
                 
-                // 音声解析ノードの作成
                 this.#analyser = this.#audioContext.createAnalyser();
-                this.#analyser.fftSize = 2048; // 細かさの設定 (2のべき乗)
-                this.#analyser.smoothingTimeConstant = 0.8; // 動きを滑らかにする
+                this.#analyser.fftSize = 2048;
+                this.#analyser.smoothingTimeConstant = 0.8;
                 source.connect(this.#analyser);
 
-                // 周波数データの格納先を準備
                 const bufferLength = this.#analyser.frequencyBinCount;
                 this.#dataArray = new Uint8Array(bufferLength);
             }
             
-            // サンプリングレートに基づいて、18kHzがどのインデックスにあるか計算
-            // index = 周波数 / (サンプリングレート / FFTサイズ)
             const sampleRate = this.#audioContext.sampleRate;
-            this.#binIndex = Math.round(targetFreq / (sampleRate / this.#analyser.fftSize));
+            const hzPerBin = sampleRate / this.#analyser.fftSize;
+
+            // ターゲット帯域のインデックス計算
+            this.#targetBinIndex = Math.round(targetFreq / hzPerBin);
+            
+            // リファレンス帯域（ノイズ検知用）のインデックス計算
+            const refFreq = targetFreq + this.#REF_OFFSET_HZ;
+            this.#refBinIndex = Math.round(refFreq / hzPerBin);
 
             return true;
-        } catch (err:any) {
+        } catch (err: any) {
             alert('マイクへのアクセスが拒否されたか、エラーが発生しました。\n' + err.message);
             return false;
         }
     }
 
     /**
-     * 信号の強度を取得
-     * @returns 信号強度
+     * 信号の強度を取得（ノイズを減衰させた有効な強度）
+     * @returns 信号強度 (0 ~ 255)
      */
-    static getStrength():number {
-        if (!this.#analyser) new Error("AudioReceiver.initを実行する必要があります");
+    static getStrength(): number {
+        if (!this.#analyser) throw new Error("AudioReceiver.initを実行する必要があります");
     
-        // 現在の周波数データを取得
         this.#analyser.getByteFrequencyData(this.#dataArray);
         
-        // 全体の中での最大音量（ノイズフロア確認用）
-        const maxInAll = Math.max(...this.#dataArray);
+        // 1. ターゲット帯域の強度（前後1ビンを含めた平均）
+        const targetStrength = (
+            (this.#dataArray[this.#targetBinIndex - 1] || 0) + 
+            (this.#dataArray[this.#targetBinIndex] || 0) + 
+            (this.#dataArray[this.#targetBinIndex + 1] || 0)
+        ) / 3;
 
-        console.info(this.#dataArray[this.#binIndex - 1], this.#dataArray[this.#binIndex], this.#dataArray[this.#binIndex + 1]);
-        // ターゲット周波数とその前後の平均値を取る（誤差吸収のため）
-        const strength = Math.round(((this.#dataArray[this.#binIndex - 1] || 0) + (this.#dataArray[this.#binIndex] || 0) + (this.#dataArray[this.#binIndex + 1] || 0)) / 3) || 0;
+        // 2. リファレンス帯域の強度（環境ノイズ・広帯域ノイズの指標）
+        const refStrength = ((this.#dataArray[this.#refBinIndex - 1] || 0) + (this.#dataArray[this.#refBinIndex] || 0) + (this.#dataArray[this.#refBinIndex + 1] || 0)) / 3;
 
-        return strength;
+        // 3. 広帯域ノイズの減衰処理（ペナルティの適用）
+        // リファレンス帯域の音量も大きい場合は、ターゲット帯域の音量もノイズ由来とみなして引く
+        const effectiveStrength = targetStrength - (refStrength * this.#NOISE_PENALTY_WEIGHT);
+
+        // 結果がマイナスにならないようにし、整数に丸める
+        return Math.max(0, Math.round(effectiveStrength));
     }
 }
