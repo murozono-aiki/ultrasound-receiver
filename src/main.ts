@@ -1,15 +1,18 @@
 import { AudioReceiver } from "./AudioReceiver.js";
 
 // 監視したい特定の周波数の初期値 (Hz)
-const targetFreq = 18000;
+const targetFreq1 = 18000;
+const targetFreq2 = 19500;
 
 const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
-const targetFreqInput = document.getElementById('targetFreq') as HTMLInputElement;
+const targetFreq1Input = document.getElementById('targetFreq') as HTMLInputElement;
+const targetFreq2Input = document.getElementById('targetFreq') as HTMLInputElement;
 
 
 startBtn.addEventListener('click', async () => {
-    await AudioReceiver.init(targetFreq);
-    targetFreqInput.value = targetFreq.toString();
+    await AudioReceiver.init(targetFreq1, targetFreq2);
+    targetFreq1Input.value = targetFreq1.toString();
+    targetFreq2Input.value = targetFreq2.toString();
     startBtn.style.display = 'none';
     (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
     update();
@@ -46,6 +49,9 @@ function update() {
     requestAnimationFrame(() => update());
 }
 
-targetFreqInput.addEventListener('input', async () => {
-    AudioReceiver.init(parseFloat(targetFreqInput.value));
+targetFreq1Input.addEventListener('change', async () => {
+    AudioReceiver.init(parseFloat(targetFreq1Input.value), parseFloat(targetFreq2Input.value));
+});
+targetFreq2Input.addEventListener('change', async () => {
+    AudioReceiver.init(parseFloat(targetFreq1Input.value), parseFloat(targetFreq2Input.value));
 });

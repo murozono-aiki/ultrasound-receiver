@@ -14,7 +14,6 @@
             padding: 20px;
         }
         h1 { font-size: 1.8rem; margin-bottom: 5px; }
-        .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 30px; }
         
         #startBtn {
             padding: 15px 40px; 
@@ -55,7 +54,6 @@
 </head>
 <body>
     <h1>Sound Radar</h1>
-    <div class="subtitle">文化祭プロトタイプ</div>
 
     <button id="startBtn">ダウジングを開始する</button>
     
@@ -64,7 +62,8 @@
         
         <div class="status-box">
             <div class="status">信号強度: <span id="val" style="color: #00ff00;">0</span></div>
-            <div class="debug">Target: <input type="number" id="targetFreq"></span> Hz</div>
+            <div class="debug">Target: <input type="number" id="targetFreq1"></span> Hz</div>
+            <div class="debug">Target: <input type="number" id="targetFreq2"></span> Hz</div>
             <!--div class="debug">Noise Floor (全体最大): <span id="maxVal">0</span></div-->
         </div>
     </div>
