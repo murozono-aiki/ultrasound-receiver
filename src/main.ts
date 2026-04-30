@@ -5,8 +5,8 @@ const targetFreq1 = 18000;
 const targetFreq2 = 19500;
 
 const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
-const targetFreq1Input = document.getElementById('targetFreq') as HTMLInputElement;
-const targetFreq2Input = document.getElementById('targetFreq') as HTMLInputElement;
+const targetFreq1Input = document.getElementById('targetFreq1') as HTMLInputElement;
+const targetFreq2Input = document.getElementById('targetFreq2') as HTMLInputElement;
 
 
 startBtn.addEventListener('click', async () => {
