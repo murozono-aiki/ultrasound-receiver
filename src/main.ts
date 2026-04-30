@@ -11,8 +11,16 @@ const targetFreq2Input = document.getElementById('targetFreq2') as HTMLInputElem
 
 startBtn.addEventListener('click', async () => {
     await AudioReceiver.init(targetFreq1, targetFreq2);
+
+    const refFreq = (targetFreq1 + targetFreq2) / 2;
+
     targetFreq1Input.value = targetFreq1.toString();
     targetFreq2Input.value = targetFreq2.toString();
+
+    (document.getElementById("targetFreq1Value") as HTMLSpanElement).textContent = Math.round(targetFreq1).toString();
+    (document.getElementById("targetFreq2Value") as HTMLSpanElement).textContent = Math.round(targetFreq2).toString();
+    (document.getElementById("RefValue") as HTMLSpanElement).textContent = Math.round(refFreq).toString();
+
     startBtn.style.display = 'none';
     (document.getElementById('radar-ui') as HTMLElement).style.display = 'block';
     update();
@@ -67,8 +75,22 @@ function update() {
 }
 
 targetFreq1Input.addEventListener('change', async () => {
-    AudioReceiver.init(parseFloat(targetFreq1Input.value), parseFloat(targetFreq2Input.value));
+    const targetFreq1 = parseFloat(targetFreq1Input.value);
+    const targetFreq2 = parseFloat(targetFreq2Input.value);
+    const refFreq = (targetFreq1 + targetFreq2) / 2;
+    await AudioReceiver.init(targetFreq1, targetFreq2);
+
+    (document.getElementById("targetFreq1Value") as HTMLSpanElement).textContent = Math.round(targetFreq1).toString();
+    (document.getElementById("targetFreq2Value") as HTMLSpanElement).textContent = Math.round(targetFreq2).toString();
+    (document.getElementById("RefValue") as HTMLSpanElement).textContent = Math.round(refFreq).toString();
 });
 targetFreq2Input.addEventListener('change', async () => {
-    AudioReceiver.init(parseFloat(targetFreq1Input.value), parseFloat(targetFreq2Input.value));
+    const targetFreq1 = parseFloat(targetFreq1Input.value);
+    const targetFreq2 = parseFloat(targetFreq2Input.value);
+    const refFreq = (targetFreq1 + targetFreq2) / 2;
+    await AudioReceiver.init(targetFreq1, targetFreq2);
+
+    (document.getElementById("targetFreq1Value") as HTMLSpanElement).textContent = Math.round(targetFreq1).toString();
+    (document.getElementById("targetFreq2Value") as HTMLSpanElement).textContent = Math.round(targetFreq2).toString();
+    (document.getElementById("RefValue") as HTMLSpanElement).textContent = Math.round(refFreq).toString();
 });

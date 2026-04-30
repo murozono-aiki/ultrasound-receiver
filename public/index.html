@@ -48,6 +48,11 @@
         }
         .status { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; }
         .debug { font-family: monospace; color: #aaa; font-size: 0.9rem; }
+        .debug input {
+            background-color: inherit;
+            color: #ccc;
+            border-color: #ccc;
+        }
         
         #radar-ui { display: none; }
     </style>
@@ -70,21 +75,21 @@
         <div class="indicator" id="indicator1"></div>
 
         <div class="status-box">
-            <div>Target1</div>
+            <div>Target1: <span id="targetFreq1Value"></span></div>
             <div class="status">信号強度: <span id="val1" style="color: #00ff00;">0</span></div>
         </div>
 
         <div class="indicator" id="indicator2"></div>
 
         <div class="status-box">
-            <div>Target2</div>
+            <div>Target2: <span id="targetFreq2Value"></span></div>
             <div class="status">信号強度: <span id="val2" style="color: #00ff00;">0</span></div>
         </div>
 
         <div class="indicator" id="indicator3"></div>
 
         <div class="status-box">
-            <div>Ref</div>
+            <div>Ref: <span id="RefValue"></span></div>
             <div class="status">信号強度: <span id="val3" style="color: #00ff00;">0</span></div>
         </div>
     </div>
